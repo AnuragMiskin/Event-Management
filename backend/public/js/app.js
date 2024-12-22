@@ -106,3 +106,65 @@ fetchEvents();
 document.getElementById('update-event-form').addEventListener('submit', updateEvent);
 
 
+
+// Fetch and display all attendees
+async function fetchAttendees() {
+  const response = await fetch(`${API_BASE_URL}/attendees`);
+  const attendees = await response.json();
+
+  const attendeeList = document.getElementById('attendee-list');
+  attendeeList.innerHTML = ''; // Clear previous list
+
+  attendees.forEach(attendee => {
+    const attendeeDiv = document.createElement('div');
+    attendeeDiv.innerHTML = `
+      <strong>${attendee.name}</strong> (${attendee.email})<br>
+      <button onclick="deleteAttendee(${attendee.id})">Delete</button>
+    `;
+    attendeeList.appendChild(attendeeDiv);
+  });
+}
+
+// Create a new attendee
+async function addAttendee(event) {
+  event.preventDefault();
+
+  const name = document.getElementById('attendee-name').value;
+  const email = document.getElementById('attendee-email').value;
+  const eventId = document.getElementById('attendee-event-id').value;
+
+  const response = await fetch(`${API_BASE_URL}/attendees`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, event_id: eventId })
+  });
+
+  if (response.ok) {
+    alert('Attendee added successfully!');
+    fetchAttendees(); // Reload the attendees list
+    document.getElementById('attendee-form').reset();
+  } else {
+    const error = await response.json();
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Delete an attendee
+async function deleteAttendee(id) {
+  if (confirm('Are you sure you want to delete this attendee?')) {
+    const response = await fetch(`${API_BASE_URL}/attendees/${id}`, { method: 'DELETE' });
+    if (response.ok) {
+      alert('Attendee deleted successfully!');
+      fetchAttendees(); // Reload the attendees list
+    } else {
+      const error = await response.json();
+      alert(`Error: ${error.message}`);
+    }
+  }
+}
+
+// Add event listener to the attendee form
+document.getElementById('attendee-form').addEventListener('submit', addAttendee);
+
+// Load attendees on page load
+fetchAttendees();
