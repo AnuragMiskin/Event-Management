@@ -168,3 +168,68 @@ document.getElementById('attendee-form').addEventListener('submit', addAttendee)
 
 // Load attendees on page load
 fetchAttendees();
+
+// Fetch and display all tasks
+async function fetchTasks() {
+  const response = await fetch(`${API_BASE_URL}/tasks`);
+  const tasks = await response.json();
+
+  const taskList = document.getElementById('task-list');
+  taskList.innerHTML = ''; // Clear previous list
+
+  tasks.forEach(task => {
+    const taskDiv = document.createElement('div');
+    taskDiv.innerHTML = `
+      <strong>${task.name}</strong> (Deadline: ${task.deadline}, Status: ${task.status})<br>
+      Assigned to Attendee ID: ${task.attendee_id}, Event ID: ${task.event_id}<br>
+      <button onclick="deleteTask(${task.id})">Delete</button>
+    `;
+    taskList.appendChild(taskDiv);
+  });
+}
+
+// Create a new task
+async function addTask(event) {
+  event.preventDefault();
+
+  const name = document.getElementById('task-name').value;
+  const deadline = document.getElementById('task-deadline').value;
+  const status = document.getElementById('task-status').value;
+  const attendeeId = document.getElementById('task-attendee-id').value;
+  const eventId = document.getElementById('task-event-id').value;
+
+  const response = await fetch(`${API_BASE_URL}/tasks`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, deadline, status, attendee_id: attendeeId, event_id: eventId })
+  });
+
+  if (response.ok) {
+    alert('Task added successfully!');
+    fetchTasks(); // Reload the tasks list
+    document.getElementById('task-form').reset();
+  } else {
+    const error = await response.json();
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Delete a task
+async function deleteTask(id) {
+  if (confirm('Are you sure you want to delete this task?')) {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, { method: 'DELETE' });
+    if (response.ok) {
+      alert('Task deleted successfully!');
+      fetchTasks(); // Reload the tasks list
+    } else {
+      const error = await response.json();
+      alert(`Error: ${error.message}`);
+    }
+  }
+}
+
+// Add event listener to the task form
+document.getElementById('task-form').addEventListener('submit', addTask);
+
+// Load tasks on page load
+fetchTasks();

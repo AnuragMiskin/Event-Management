@@ -32,6 +32,7 @@
         <button type="submit">Update Event</button>
       </form>
     </div>
+    <!-- attendee Management Section -->
     <div id="attendee-management">
       <h2>Manage Attendees</h2>
       <form id="attendee-form">
@@ -42,6 +43,24 @@
       </form>
       <div id="attendee-list">
         <!-- Attendees will be dynamically loaded here -->
+      </div>
+    </div>
+     <!-- Task Management Section -->
+     <div id="task-management">
+      <h2>Manage Tasks</h2>
+      <form id="task-form">
+        <input type="text" id="task-name" placeholder="Task Name" required />
+        <input type="date" id="task-deadline" required />
+        <select id="task-status">
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+        </select>
+        <input type="number" id="task-attendee-id" placeholder="Attendee ID" required />
+        <input type="number" id="task-event-id" placeholder="Event ID" required />
+        <button type="submit">Add Task</button>
+      </form>
+      <div id="task-list">
+        <!-- Tasks will be dynamically loaded here -->
       </div>
     </div>
   </div>
