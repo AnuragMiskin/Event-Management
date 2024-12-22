@@ -14,6 +14,7 @@ async function fetchEvents() {
       <strong>${event.name}</strong> (${event.date})<br>
       ${event.description}<br>
       Location: ${event.location}<br>
+      event id: ${event.id}<br>
       <button onclick="prefillUpdateForm(${event.id})">Edit</button>
       <button onclick="deleteEvent(${event.id})">Delete</button>
     `;
@@ -119,6 +120,8 @@ async function fetchAttendees() {
     const attendeeDiv = document.createElement('div');
     attendeeDiv.innerHTML = `
       <strong>${attendee.name}</strong> (${attendee.email})<br>
+      Event ID: ${attendee.event_id}<br>
+      Attendee ID: ${attendee.id}<br>
       <button onclick="deleteAttendee(${attendee.id})">Delete</button>
     `;
     attendeeList.appendChild(attendeeDiv);
@@ -171,21 +174,45 @@ fetchAttendees();
 
 // Fetch and display all tasks
 async function fetchTasks() {
-  const response = await fetch(`${API_BASE_URL}/tasks`);
-  const tasks = await response.json();
-
+  // First get all events to fetch tasks for each
+  const eventsResponse = await fetch(`${API_BASE_URL}/events`);
+  const events = await eventsResponse.json();
+  
   const taskList = document.getElementById('task-list');
   taskList.innerHTML = ''; // Clear previous list
 
-  tasks.forEach(task => {
-    const taskDiv = document.createElement('div');
-    taskDiv.innerHTML = `
-      <strong>${task.name}</strong> (Deadline: ${task.deadline}, Status: ${task.status})<br>
-      Assigned to Attendee ID: ${task.attendee_id}, Event ID: ${task.event_id}<br>
-      <button onclick="deleteTask(${task.id})">Delete</button>
-    `;
-    taskList.appendChild(taskDiv);
+  // Fetch tasks for each event
+  for (const event of events) {
+    const response = await fetch(`${API_BASE_URL}/tasks/${event.id}`);
+    const tasks = await response.json();
+
+    tasks.forEach(task => {
+      const taskDiv = document.createElement('div');
+      taskDiv.innerHTML = `
+        <strong>${task.name}</strong> (Deadline: ${task.deadline}, Status: ${task.status})<br>
+        Assigned to: ${task.attendee_name || 'Unassigned'}<br>
+        Event: ${event.name}<br>
+        <button onclick="updateTaskStatus(${task.id})">Toggle Status</button>
+      `;
+      taskList.appendChild(taskDiv);
+    });
+  }
+}
+
+// Add function to update task status
+async function updateTaskStatus(taskId) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'Completed' }) // You can toggle between 'Pending' and 'Completed'
   });
+
+  if (response.ok) {
+    fetchTasks(); // Refresh the task list
+  } else {
+    const error = await response.json();
+    alert(`Error: ${error.message}`);
+  }
 }
 
 // Create a new task
