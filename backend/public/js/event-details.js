@@ -14,7 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('addAttendeeForm').addEventListener('submit', handleAddAttendee);
     document.getElementById('addTaskForm').addEventListener('submit', handleAddTask);
-    document.getElementById('editEventForm').addEventListener('submit', handleEventUpdate);
+    document.getElementById('toggleTaskForm').addEventListener('click', () => {
+        const form = document.getElementById('addTaskForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
 });
 
 async function loadEventDetails(eventId) {
@@ -28,7 +31,7 @@ async function loadEventDetails(eventId) {
             <h2>${event.name}</h2>
             <p>${event.description}</p>
             <p><strong>Location:</strong> ${event.location}</p>
-            <p><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
+            <p><strong>Date:</strong> ${formatDate(event.date)}</p>
             <button onclick="toggleEditMode(true)">Edit Event</button>
         `;
 
@@ -337,4 +340,12 @@ async function updateProgressStats() {
         console.error('Error updating progress stats:', error);
         document.getElementById('progressStats').innerHTML = '<p>Error loading progress stats.</p>';
     }
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
 }
