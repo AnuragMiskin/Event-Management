@@ -113,26 +113,86 @@ async function loadEventAttendees() {
 async function loadEventTasks() {
     try {
         const tasks = await api.get(`/tasks/${currentEvent.id}`);
+        const attendees = await api.get('/attendees');
+        const eventAttendees = attendees.filter(a => a.event_id === currentEvent.id);
         
-        document.getElementById('eventTasks').innerHTML = tasks.map(task => `
-            <div class="list-item">
-                <div>
-                    <strong>${task.name}</strong>
-                    <div>Assigned to: ${task.attendee_name || 'Unassigned'}</div>
-                    <div>Deadline: ${new Date(task.deadline).toLocaleDateString()}</div>
-                    <div class="status-${task.status.toLowerCase()}">${task.status}</div>
+        document.getElementById('eventTasks').innerHTML = tasks.map(task => {
+            // Create attendee selection dropdown for reassignment
+            const attendeeOptions = eventAttendees.map(attendee =>
+                `<option value="${attendee.id}" ${attendee.id === task.attendee_id ? 'selected' : ''}>
+                    ${attendee.name}
+                </option>`
+            ).join('');
+
+            return `
+                <div class="list-item">
+                    <div>
+                        <strong>${task.name}</strong>
+                        ${task.attendee_id ? 
+                            `<div>Assigned to: ${task.attendee_name}</div>` :
+                            `<div class="form-group">
+                                <select class="task-reassign" data-task-id="${task.id}">
+                                    <option value="">Select Assignee</option>
+                                    ${attendeeOptions}
+                                </select>
+                            </div>`
+                        }
+                        <div>Deadline: ${new Date(task.deadline).toLocaleDateString()}</div>
+                        <div class="status-${task.status.toLowerCase()}">${task.status}</div>
+                    </div>
+                    <div>
+                        ${task.attendee_id ? 
+                            `<button onclick="unassignTask(${task.id})" class="delete-btn">Unassign</button>` : ''
+                        }
+                        <button onclick="toggleTaskStatus(${task.id}, '${task.status === 'Pending' ? 'Completed' : 'Pending'}')">
+                            ${task.status === 'Pending' ? 'Mark Complete' : 'Mark Pending'}
+                        </button>
+                    </div>
                 </div>
-                <button onclick="toggleTaskStatus(${task.id}, '${task.status === 'Pending' ? 'Completed' : 'Pending'}')">
-                    ${task.status === 'Pending' ? 'Mark Complete' : 'Mark Pending'}
-                </button>
-            </div>
-        `).join('');
+            `;
+        }).join('');
+
+        // Add change event listeners for task reassignment
+        document.querySelectorAll('.task-reassign').forEach(select => {
+            select.addEventListener('change', (e) => {
+                const taskId = e.target.dataset.taskId;
+                const newAttendeeId = e.target.value;
+                if (newAttendeeId) {
+                    reassignTask(taskId, newAttendeeId);
+                }
+            });
+        });
 
         return tasks;
     } catch (error) {
         console.error('Error loading tasks:', error);
         document.getElementById('eventTasks').innerHTML = '<p>Error loading tasks.</p>';
         return [];
+    }
+}
+
+// Add these new functions
+async function unassignTask(taskId) {
+    if (!confirm('Are you sure you want to unassign this task?')) return;
+
+    try {
+        await api.put(`/tasks/${taskId}/assign`, { attendee_id: null });
+        await loadEventTasks();
+        updateProgressStats();
+    } catch (error) {
+        console.error('Error unassigning task:', error);
+        alert('Failed to unassign task. Please try again.');
+    }
+}
+
+async function reassignTask(taskId, attendeeId) {
+    try {
+        await api.put(`/tasks/${taskId}/assign`, { attendee_id: attendeeId });
+        await loadEventTasks();
+        updateProgressStats();
+    } catch (error) {
+        console.error('Error reassigning task:', error);
+        alert('Failed to reassign task. Please try again.');
     }
 }
 

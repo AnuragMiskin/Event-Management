@@ -56,3 +56,23 @@ exports.updateTaskStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Assign/Reassign Task
+exports.assignTask = async (req, res) => {
+  const { id } = req.params;
+  const { attendee_id } = req.body;
+  try {
+    // If attendee_id is provided, verify the attendee exists
+    if (attendee_id) {
+      const [attendee] = await db.query('SELECT id FROM attendees WHERE id = ?', [attendee_id]);
+      if (attendee.length === 0) {
+        return res.status(400).json({ error: 'Invalid attendee_id. Attendee does not exist.' });
+      }
+    }
+
+    await db.query('UPDATE tasks SET attendee_id = ? WHERE id = ?', [attendee_id, id]);
+    res.status(200).json({ message: 'Task assignment updated successfully!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

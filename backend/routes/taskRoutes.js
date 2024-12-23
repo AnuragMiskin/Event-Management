@@ -11,4 +11,6 @@ router.get('/:event_id', taskController.getTasksByEvent);
 // Update Task Status
 router.put('/:id', taskController.updateTaskStatus);
 
+router.put('/:id/assign', taskController.assignTask);
+
 module.exports = router;
