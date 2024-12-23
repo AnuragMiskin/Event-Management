@@ -1,69 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Management Dashboard</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management System</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="app">
-    <h1>Event Management Dashboard</h1>
-    <div id="event-management">
-      <h2>Manage Events</h2>
-      <div id="event-list">
-        <!-- Events will be dynamically loaded here -->
-      </div>
-      <h3>Create New Event</h3>
-      <form id="event-form">
-        <input type="text" id="event-name" placeholder="Event Name" required />
-        <textarea id="event-description" placeholder="Description"></textarea>
-        <input type="text" id="event-location" placeholder="Location" required />
-        <input type="date" id="event-date" required />
-        <button type="submit">Create Event</button>
-      </form>
-      <h3>Update Event</h3>
-      <form id="update-event-form">
-        <input type="hidden" id="update-event-id" />
-        <input type="text" id="update-event-name" placeholder="Event Name" required />
-        <textarea id="update-event-description" placeholder="Description"></textarea>
-        <input type="text" id="update-event-location" placeholder="Location" required />
-        <input type="date" id="update-event-date" required />
-        <button type="submit">Update Event</button>
-      </form>
+    <nav class="navbar">
+        <a href="index.html" class="active">Events Dashboard</a>
+        <a href="attendees.html">Manage Attendees</a>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h2>Create New Event</h2>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label>Event Name:</label>
+                    <input type="text" id="eventName" required>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea id="eventDescription" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Location:</label>
+                    <input type="text" id="eventLocation" required>
+                </div>
+                <div class="form-group">
+                    <label>Date:</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                <button type="submit">Create Event</button>
+            </form>
+        </div>
+
+        <div class="events-grid" id="eventsList">
+            <!-- Events will be loaded here -->
+        </div>
     </div>
-    <!-- attendee Management Section -->
-    <div id="attendee-management">
-      <h2>Manage Attendees</h2>
-      <form id="attendee-form">
-        <input type="text" id="attendee-name" placeholder="Attendee Name" required />
-        <input type="email" id="attendee-email" placeholder="Attendee Email" required />
-        <input type="number" id="attendee-event-id" placeholder="Event ID" required />
-        <button type="submit">Add Attendee</button>
-      </form>
-      <div id="attendee-list">
-        <!-- Attendees will be dynamically loaded here -->
-      </div>
-    </div>
-     <!-- Task Management Section -->
-     <div id="task-management">
-      <h2>Manage Tasks</h2>
-      <form id="task-form">
-        <input type="text" id="task-name" placeholder="Task Name" required />
-        <input type="date" id="task-deadline" required />
-        <select id="task-status">
-          <option value="Pending">Pending</option>
-          <option value="Completed">Completed</option>
-        </select>
-        <input type="number" id="task-attendee-id" placeholder="Attendee ID" required />
-        <input type="number" id="task-event-id" placeholder="Event ID" required />
-        <button type="submit">Add Task</button>
-      </form>
-      <div id="task-list">
-        <!-- Tasks will be dynamically loaded here -->
-      </div>
-    </div>
-  </div>
-  <script src="js/app.js"></script>
+
+    <script src="js/api.js"></script>
+    <script src="js/events.js"></script>
 </body>
 </html>
