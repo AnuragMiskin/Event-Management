@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('addAttendeeForm').addEventListener('submit', handleAddAttendee);
     document.getElementById('addTaskForm').addEventListener('submit', handleAddTask);
+    document.getElementById('editEventForm').addEventListener('submit', handleEventUpdate);
     document.getElementById('toggleTaskForm').addEventListener('click', () => {
         const form = document.getElementById('addTaskForm');
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
