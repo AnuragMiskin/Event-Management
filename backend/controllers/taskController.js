@@ -76,3 +76,14 @@ exports.assignTask = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Delete a Task
+exports.deleteTask = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('DELETE FROM tasks WHERE id = ?', [id]);
+        res.status(200).json({ message: 'Task deleted successfully!' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

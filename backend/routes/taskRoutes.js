@@ -13,4 +13,7 @@ router.put('/:id', taskController.updateTaskStatus);
 
 router.put('/:id/assign', taskController.assignTask);
 
+// Add this line to handle DELETE requests for tasks
+router.delete('/:id', taskController.deleteTask);
+
 module.exports = router;

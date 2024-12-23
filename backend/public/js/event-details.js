@@ -140,13 +140,14 @@ async function loadEventTasks() {
                                 </select>
                             </div>`
                         }
-                        <div>Deadline: ${new Date(task.deadline).toLocaleDateString()}</div>
+                        <div>Deadline: ${formatDate(task.deadline)}</div>
                         <div class="status-${task.status.toLowerCase()}">${task.status}</div>
                     </div>
                     <div>
                         ${task.attendee_id ? 
                             `<button onclick="unassignTask(${task.id})" class="delete-btn">Unassign</button>` : ''
                         }
+                        <button onclick="removeTask(${task.id})" class="delete-btn">Remove</button>
                         <button onclick="toggleTaskStatus(${task.id}, '${task.status === 'Pending' ? 'Completed' : 'Pending'}')">
                             ${task.status === 'Pending' ? 'Mark Complete' : 'Mark Pending'}
                         </button>
@@ -348,4 +349,18 @@ function formatDate(dateString) {
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+}
+
+async function removeTask(taskId) {
+    if (!confirm('Are you sure you want to remove this task?')) return;
+
+    try {
+        await api.delete(`/tasks/${taskId}`);
+        await loadEventTasks(); // Refresh the task list
+        updateProgressStats(); // Update progress stats if necessary
+        alert('Task removed successfully!');
+    } catch (error) {
+        console.error('Error removing task:', error);
+        alert('Failed to remove task. Please try again.');
+    }
 }
