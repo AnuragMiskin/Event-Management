@@ -48,7 +48,7 @@ async function loadEventAttendees() {
         const attendees = await api.get('/attendees');
         const eventAttendees = attendees.filter(a => a.event_id === currentEvent.id);
         
-        document.getElementById('eventAttendees').innerHTML = eventAttendees.map(attendee => `
+        const eventAttendeesHtml = eventAttendees.map(attendee => `
             <div class="list-item">
                 <div>
                     <strong>${attendee.name}</strong>
@@ -58,6 +58,9 @@ async function loadEventAttendees() {
             </div>
         `).join('');
 
+        document.getElementById('eventAttendees').innerHTML = 
+            eventAttendees.length ? eventAttendeesHtml : '<p>No attendees assigned to this event yet.</p>';
+
         // Update task attendee select
         const taskAttendeeSelect = document.getElementById('taskAttendee');
         taskAttendeeSelect.innerHTML = eventAttendees.map(attendee =>
@@ -65,6 +68,7 @@ async function loadEventAttendees() {
         ).join('');
     } catch (error) {
         console.error('Error loading attendees:', error);
+        document.getElementById('eventAttendees').innerHTML = '<p>Error loading attendees.</p>';
     }
 }
 
@@ -111,14 +115,26 @@ async function handleAddAttendee(e) {
     if (!attendeeId) return;
 
     try {
+        // Use the new update endpoint
         await api.put(`/attendees/${attendeeId}`, { event_id: currentEvent.id });
-        await loadEventAttendees();
-        await loadAvailableAttendees();
+        
+        // Show success message
+        alert('Attendee added to event successfully!');
+        
+        // Refresh the attendee lists
+        await Promise.all([
+            loadEventAttendees(),
+            loadAvailableAttendees()
+        ]);
+        
+        // Update progress stats
+        updateProgressStats();
     } catch (error) {
         console.error('Error adding attendee to event:', error);
         alert('Failed to add attendee to event. Please try again.');
     }
 }
+
 
 async function handleAddTask(e) {
     e.preventDefault();
@@ -146,9 +162,19 @@ async function removeAttendee(attendeeId) {
     if (!confirm('Are you sure you want to remove this attendee from the event?')) return;
 
     try {
+        // Set event_id to null to remove from event
         await api.put(`/attendees/${attendeeId}`, { event_id: null });
-        await loadEventAttendees();
-        await loadAvailableAttendees();
+        
+        // Show success message
+        alert('Attendee removed from event successfully!');
+        
+        // Refresh the attendee lists
+        await Promise.all([
+            loadEventAttendees(),
+            loadAvailableAttendees()
+        ]);
+        
+        // Update progress stats
         updateProgressStats();
     } catch (error) {
         console.error('Error removing attendee:', error);

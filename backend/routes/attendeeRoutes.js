@@ -11,4 +11,6 @@ router.get('/', attendeeController.getAllAttendees);
 // Delete an Attendee
 router.delete('/:id', attendeeController.deleteAttendee);
 
+router.put('/:id', attendeeController.updateAttendee);
+
 module.exports = router;

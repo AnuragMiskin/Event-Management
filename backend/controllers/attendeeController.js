@@ -34,3 +34,18 @@ exports.deleteAttendee = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Update an Attendee
+exports.updateAttendee = async (req, res) => {
+  const { id } = req.params;
+  const { event_id } = req.body;
+  try {
+    await db.query(
+      'UPDATE attendees SET event_id = ? WHERE id = ?',
+      [event_id, id]
+    );
+    res.status(200).json({ message: 'Attendee updated successfully!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
