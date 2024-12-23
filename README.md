@@ -16,7 +16,7 @@ This project is an Event Management System that allows users to create and manag
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd <repository-name>/backend
+   cd Event-Management/backend
    ```
 
 2. **Install dependencies**:
@@ -35,11 +35,13 @@ This project is an Event Management System that allows users to create and manag
 ### Running the Application
 
 To start the application, navigate to the `backend` directory and run:
+```bash
 npx nodemon index.js
-
+```
 Alternatively, you can run:
+```bash
 node index.js
-
+```
 This will start the server on `http://localhost:3000`.
 
 ### Project Structure
