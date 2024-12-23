@@ -92,6 +92,7 @@ button:hover {
     gap: 20px;
 }
 
+/* Remove or comment out the .two-column-grid class */
 .two-column-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -159,8 +160,8 @@ button:hover {
     color: green;
 }
 
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
     .two-column-grid {
         grid-template-columns: 1fr;
     }
-}
+} */
