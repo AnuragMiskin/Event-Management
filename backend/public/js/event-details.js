@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('addAttendeeForm').addEventListener('submit', handleAddAttendee);
     document.getElementById('addTaskForm').addEventListener('submit', handleAddTask);
+    document.getElementById('editEventForm').addEventListener('submit', handleEventUpdate);
 });
 
 async function loadEventDetails(eventId) {
@@ -22,12 +23,20 @@ async function loadEventDetails(eventId) {
         const event = await api.get(`/events/${eventId}`);
         currentEvent = event;
         
-        document.getElementById('eventDetails').innerHTML = `
+        // Update view mode
+        document.querySelector('#eventDetails .view-mode').innerHTML = `
             <h2>${event.name}</h2>
             <p>${event.description}</p>
             <p><strong>Location:</strong> ${event.location}</p>
             <p><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
+            <button onclick="toggleEditMode(true)">Edit Event</button>
         `;
+
+        // Update edit form
+        document.getElementById('editEventName').value = event.name;
+        document.getElementById('editEventDescription').value = event.description;
+        document.getElementById('editEventLocation').value = event.location;
+        document.getElementById('editEventDate').value = event.date.split('T')[0];
 
         // Load attendees and tasks
         await Promise.all([
@@ -40,6 +49,32 @@ async function loadEventDetails(eventId) {
     } catch (error) {
         console.error('Error loading event details:', error);
         alert('Failed to load event details. Please try again.');
+    }
+}
+
+function toggleEditMode(show) {
+    document.querySelector('#eventDetails .view-mode').style.display = show ? 'none' : 'block';
+    document.querySelector('#eventDetails .edit-mode').style.display = show ? 'block' : 'none';
+}
+
+async function handleEventUpdate(e) {
+    e.preventDefault();
+    
+    const data = {
+        name: document.getElementById('editEventName').value,
+        description: document.getElementById('editEventDescription').value,
+        location: document.getElementById('editEventLocation').value,
+        date: document.getElementById('editEventDate').value
+    };
+
+    try {
+        await api.put(`/events/${currentEvent.id}`, data);
+        toggleEditMode(false);
+        loadEventDetails(currentEvent.id);
+        alert('Event updated successfully!');
+    } catch (error) {
+        console.error('Error updating event:', error);
+        alert('Failed to update event. Please try again.');
     }
 }
 
@@ -66,9 +101,12 @@ async function loadEventAttendees() {
         taskAttendeeSelect.innerHTML = eventAttendees.map(attendee =>
             `<option value="${attendee.id}">${attendee.name}</option>`
         ).join('');
+
+        return eventAttendees;
     } catch (error) {
         console.error('Error loading attendees:', error);
         document.getElementById('eventAttendees').innerHTML = '<p>Error loading attendees.</p>';
+        return [];
     }
 }
 
@@ -80,8 +118,7 @@ async function loadEventTasks() {
             <div class="list-item">
                 <div>
                     <strong>${task.name}</strong>
-                    <div>Assigned to: ${task.attendee_name}</div>
-                // js/event-details.js (continued)
+                    <div>Assigned to: ${task.attendee_name || 'Unassigned'}</div>
                     <div>Deadline: ${new Date(task.deadline).toLocaleDateString()}</div>
                     <div class="status-${task.status.toLowerCase()}">${task.status}</div>
                 </div>
@@ -90,22 +127,30 @@ async function loadEventTasks() {
                 </button>
             </div>
         `).join('');
+
+        return tasks;
     } catch (error) {
         console.error('Error loading tasks:', error);
+        document.getElementById('eventTasks').innerHTML = '<p>Error loading tasks.</p>';
+        return [];
     }
 }
 
 async function loadAvailableAttendees() {
     try {
         const attendees = await api.get('/attendees');
-        const eventAttendees = attendees.filter(a => a.event_id === currentEvent.id);
         const availableAttendees = attendees.filter(a => !a.event_id || a.event_id !== currentEvent.id);
         
         document.getElementById('attendeeSelect').innerHTML = availableAttendees.map(attendee =>
             `<option value="${attendee.id}">${attendee.name}</option>`
         ).join('');
+
+        if (availableAttendees.length === 0) {
+            document.getElementById('attendeeSelect').innerHTML = '<option value="">No available attendees</option>';
+        }
     } catch (error) {
         console.error('Error loading available attendees:', error);
+        document.getElementById('attendeeSelect').innerHTML = '<option value="">Error loading attendees</option>';
     }
 }
 
@@ -115,11 +160,7 @@ async function handleAddAttendee(e) {
     if (!attendeeId) return;
 
     try {
-        // Use the new update endpoint
         await api.put(`/attendees/${attendeeId}`, { event_id: currentEvent.id });
-        
-        // Show success message
-        alert('Attendee added to event successfully!');
         
         // Refresh the attendee lists
         await Promise.all([
@@ -129,16 +170,24 @@ async function handleAddAttendee(e) {
         
         // Update progress stats
         updateProgressStats();
+        
+        // Show success message
+        alert('Attendee added to event successfully!');
     } catch (error) {
         console.error('Error adding attendee to event:', error);
         alert('Failed to add attendee to event. Please try again.');
     }
 }
 
-
 async function handleAddTask(e) {
     e.preventDefault();
     
+    const attendeeSelect = document.getElementById('taskAttendee');
+    if (attendeeSelect.options.length === 0) {
+        alert('Please add attendees to the event before creating tasks.');
+        return;
+    }
+
     const data = {
         name: document.getElementById('taskName').value,
         deadline: document.getElementById('taskDeadline').value,
@@ -162,20 +211,20 @@ async function removeAttendee(attendeeId) {
     if (!confirm('Are you sure you want to remove this attendee from the event?')) return;
 
     try {
-        // Set event_id to null to remove from event
         await api.put(`/attendees/${attendeeId}`, { event_id: null });
         
-        // Show success message
-        alert('Attendee removed from event successfully!');
-        
-        // Refresh the attendee lists
+        // Refresh the attendee lists and tasks
         await Promise.all([
             loadEventAttendees(),
-            loadAvailableAttendees()
+            loadAvailableAttendees(),
+            loadEventTasks()
         ]);
         
         // Update progress stats
         updateProgressStats();
+        
+        // Show success message
+        alert('Attendee removed from event successfully!');
     } catch (error) {
         console.error('Error removing attendee:', error);
         alert('Failed to remove attendee. Please try again.');
@@ -226,5 +275,6 @@ async function updateProgressStats() {
         `;
     } catch (error) {
         console.error('Error updating progress stats:', error);
+        document.getElementById('progressStats').innerHTML = '<p>Error loading progress stats.</p>';
     }
 }

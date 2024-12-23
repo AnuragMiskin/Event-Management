@@ -14,7 +14,32 @@
 
     <div class="container">
         <div id="eventDetails" class="card">
-            <!-- Event details will be loaded here -->
+            <div class="view-mode">
+                <!-- Event details will be loaded here -->
+            </div>
+            <div class="edit-mode" style="display: none;">
+                <h2>Edit Event</h2>
+                <form id="editEventForm">
+                    <div class="form-group">
+                        <label>Event Name:</label>
+                        <input type="text" id="editEventName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description:</label>
+                        <textarea id="editEventDescription" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Location:</label>
+                        <input type="text" id="editEventLocation" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date:</label>
+                        <input type="date" id="editEventDate" required>
+                    </div>
+                    <button type="submit">Save Changes</button>
+                    <button type="button" onclick="toggleEditMode(false)" class="delete-btn">Cancel</button>
+                </form>
+            </div>
         </div>
 
         <div class="two-column-grid">
@@ -24,7 +49,7 @@
                     <form id="addAttendeeForm">
                         <div class="form-group">
                             <label>Add Attendee:</label>
-                            <select id="attendeeSelect"></select>
+                            <select id="attendeeSelect" required></select>
                         </div>
                         <button type="submit">Add to Event</button>
                     </form>
